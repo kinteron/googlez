@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Gogglez</string>
+    <string name="btn_name">take picture</string>
+    <string name="camera_access_failure_message">could not open camera</string>
+</resources>
