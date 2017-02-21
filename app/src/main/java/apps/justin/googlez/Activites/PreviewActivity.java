@@ -27,10 +27,13 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.SparseIntArray;
 import android.util.Xml;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParser;
 
@@ -42,23 +45,26 @@ import apps.justin.gogglez.R;
 import apps.justin.googlez.Classes.Preview;
 
 
-
 public class PreviewActivity extends AppCompatActivity {
 
     private CameraCharacteristics characteristics;
     private Preview drawableView;
 
-    /*more memory efficient way to map integers to integers
+    /*SparseIntArray
+    more memory efficient way to map integers to integers
     this container keeps its mappings in an array data structure, using a binary search to find keys
      */
 
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
+
     static {
+        //if phone's getting rotated
         ORIENTATIONS.append(Surface.ROTATION_0, 90);
         ORIENTATIONS.append(Surface.ROTATION_90, 0);
         ORIENTATIONS.append(Surface.ROTATION_180, 270);
         ORIENTATIONS.append(Surface.ROTATION_270, 180);
     }
+
     //camera related references
     private String cameraId;
     protected CameraDevice cameraDevice;
@@ -81,17 +87,21 @@ public class PreviewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview);
 
-        XmlPullParser parser = getResources().getXml(R.layout.activity_preview));
-        AttributeSet attributes = Xml.asAttributeSet(parser);
-
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        //setup Listeners for capture
 
+        // used for camera operations
         Button btnCapture = (Button) findViewById(R.id.btnCapture);
+        //frames get displayed on this
+        SurfaceView surface = (SurfaceView) findViewById(R.id.surface);
+        surface.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                //distortImage();
+                Toast.makeText(getParent(), "touched screen", Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        });
 
-
-
-        startSession(openCamera());
 
         Thread drawingThread = new Thread(new Runnable() {
             @Override
@@ -102,7 +112,7 @@ public class PreviewActivity extends AppCompatActivity {
         drawingThread.start();
 
         //after changes are applied - view's ready to be drawn request draw()
-        drawableView.invalidate();
+
     }
 
     private void errorDialog() {
@@ -118,6 +128,10 @@ public class PreviewActivity extends AppCompatActivity {
             }
         });
         dialog.create();
+    }
+
+    public void openCam() {
+        startSession(openCamera());
     }
 
     private CameraManager openCamera() {
@@ -144,10 +158,9 @@ public class PreviewActivity extends AppCompatActivity {
             StreamConfigurationMap configs = characteristics.get(
                     CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
             drawableView = new Preview(this, manager, configs);   //created SurfaceView
-            drawableView.setLay
-            //assign surface to preview object (
+            //assignment is done in activity_preview.XML
 
-
+//        drawableView.invalidate();
 //            manager.openCamera(camList[0], drawableView.getCallback(), drawableView.getHandler());
         } catch (CameraAccessException e) {
             e.printStackTrace();
@@ -160,15 +173,25 @@ public class PreviewActivity extends AppCompatActivity {
         return manager;
     }
 
+    public void captureImage(View v){
+        //takePicture();
+    }
+
+
+    public void createCamPreview(CameraDevice device){
+
+    }
+
     private void startSession(CameraManager manager) {
         //set of output
         List<SurfaceView> outputs = new ArrayList<SurfaceView>();
-        for(int i = 0; i < 10; i++){
+        for (int i = 0; i < 10; i++) {
             try {
                 outputs.add(new Preview(this, manager, manager.getCameraCharacteristics(manager.getCameraIdList()[0]).get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP)));
             } catch (CameraAccessException e) {
                 e.printStackTrace();
-            };
+            }
+            ;
         }
         CameraDevice.StateCallback callback = drawableView.getCallback();
         drawableView.getHandler();

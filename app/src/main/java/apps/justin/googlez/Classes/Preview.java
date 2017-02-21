@@ -16,6 +16,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParser;
 
@@ -32,12 +33,15 @@ import apps.justin.googlez.Activites.PreviewActivity;
 public class Preview extends SurfaceView implements SurfaceHolder.Callback{
 
     private SurfaceHolder holder;
+    private PreviewActivity primary;
 
     public Preview(Context c){
-        super(c, );
+        super(c);
+        //access PreviewActivity methods
+        primary = (PreviewActivity) c;
         holder = getHolder();
         holder.addCallback(this);
-
+        this.surfaceCreated(holder);
     }
 
     public Preview(Context context, StreamConfigurationMap configs) {
@@ -88,7 +92,9 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) { //don't necessarily draw in here when rendering is proceeded anywhere else
-
+        Log.d(VIEW_LOG_TAG, "surface Created ");
+        Toast.makeText(primary, VIEW_LOG_TAG + "surface Created", Toast.LENGTH_SHORT).show();
+        primary.openCam();
 //        try {
 //            // create the surface and start camera preview
 ////            if (mCamera == null) {
@@ -114,17 +120,18 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
         return new CameraDevice.StateCallback(){
             @Override
             public void onOpened(CameraDevice camera) {
-
+                Log.d(VIEW_LOG_TAG, "camera opened" + camera);
+                primary.createCamPreview(camera);
             }
 
             @Override
             public void onDisconnected(CameraDevice camera) {
-
+                camera.close();
             }
 
             @Override
             public void onError(CameraDevice camera, int error) {
-
+                camera.close();
             }
         };
     }
