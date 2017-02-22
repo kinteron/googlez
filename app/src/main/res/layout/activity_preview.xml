@@ -16,7 +16,9 @@
     <!--
     android:layout_alignBottom="@id/btnCapture"
     android:layout_above="@id/btnCapture"-->
-
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
     <Button
         android:id="@+id/btnCapture"
         android:text="@string/btn_name"
@@ -24,6 +26,14 @@
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:onClick="captureImage"/>
+    <Button
+        android:id="@+id/btnStartCam"
+        android:text="@string/btnStart_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:onClick="openCam"/>
+    </LinearLayout>
 
     <!--<TextView android:text="Hello World!" android:layout_width="wrap_content"-->
         <!--android:layout_height="wrap_content" />-->

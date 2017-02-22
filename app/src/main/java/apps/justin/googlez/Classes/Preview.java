@@ -16,6 +16,7 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -40,24 +41,11 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
         //access PreviewActivity methods
         primary = (PreviewActivity) c;
         holder = getHolder();
+        holder.setFixedSize(300, 300);
         holder.addCallback(this);
         this.surfaceCreated(holder);
-    }
-
-    public Preview(Context context, StreamConfigurationMap configs) {
-        this(context);
-
-        Size[] outputSizes = configs.getOutputSizes(SurfaceView.class);
-//                holder.setFixedSize(outputSizes[0].getWidth(), outputSizes[0].getHeight());
-        holder.setFixedSize(300, 300);
         // deprecated setting, but required on Android versions prior to 3.0
         holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
-
-    }
-
-    public Preview(Context context, CameraManager manager, StreamConfigurationMap configs) {
-        this(context, configs);
-
 
     }
 
@@ -94,7 +82,7 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
     public void surfaceCreated(SurfaceHolder holder) { //don't necessarily draw in here when rendering is proceeded anywhere else
         Log.d(VIEW_LOG_TAG, "surface Created ");
         Toast.makeText(primary, VIEW_LOG_TAG + "surface Created", Toast.LENGTH_SHORT).show();
-        primary.openCam();
+//        primary.openCam();
 //        try {
 //            // create the surface and start camera preview
 ////            if (mCamera == null) {
@@ -121,17 +109,27 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
             @Override
             public void onOpened(CameraDevice camera) {
                 Log.d(VIEW_LOG_TAG, "camera opened" + camera);
-                primary.createCamPreview(camera);
+
+                final CameraDevice device = camera;
+                primary.setButton(new OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        primary.closeCam(device);
+                        ((Button) v).setText("deactivate Cam");
+                        v.setEnabled(true);
+                    }
+                });
+                primary.createCamPreview(device);
             }
 
             @Override
             public void onDisconnected(CameraDevice camera) {
-                camera.close();
+                primary.closeCam(camera);
             }
 
             @Override
             public void onError(CameraDevice camera, int error) {
-                camera.close();
+                primary.closeCam(camera);
             }
         };
     }
