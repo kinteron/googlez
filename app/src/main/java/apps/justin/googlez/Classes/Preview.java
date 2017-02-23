@@ -8,6 +8,7 @@ import android.hardware.camera2.CameraCaptureSession;
 import android.hardware.camera2.CameraDevice;
 import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.params.StreamConfigurationMap;
+import android.support.annotation.NonNull;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Size;
@@ -31,21 +32,15 @@ import apps.justin.googlez.Activites.PreviewActivity;
  * hold information of changes to the surface
  * surface is available between surfaceCreated and surfaceDestroyed
  */
-public class Preview extends SurfaceView implements SurfaceHolder.Callback{
+public class Preview implements SurfaceHolder.Callback{
 
-    private SurfaceHolder holder;
     private PreviewActivity primary;
 
     public Preview(Context c){
-        super(c);
+
         //access PreviewActivity methods
         primary = (PreviewActivity) c;
-        holder = getHolder();
-        holder.setFixedSize(300, 300);
-        holder.addCallback(this);
-        this.surfaceCreated(holder);
-        // deprecated setting, but required on Android versions prior to 3.0
-        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+
 
     }
 
@@ -58,40 +53,28 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
      * (though is not guaranteed that the callback will be instantaneous).
      */
 
-    @Override
-    protected synchronized void onDraw(Canvas canvas) {  //called by android framework view draw itself
-        super.onDraw(canvas);
 
-        //all calls to draw through the canvas
-        //update physics?
-        //fisheye ball
-
-        holder.lockCanvas();    //frees canvas for editing | locks for any other purposes
-        //start editing pixels
-
-        //TODO edit canvas and repaint e.g. drawColor()
-
-
-        //done with editing / drawing on canvas - unlocking
-        holder.unlockCanvasAndPost(canvas);
-    }
+//    protected synchronized void onDraw(Canvas canvas) {  //called by android framework view draw itself
+//
+//        //all calls to draw through the canvas
+//        //update physics?
+//        //fisheye ball
+//
+//        holder.lockCanvas();    //frees canvas for editing | locks for any other purposes
+//        //start editing pixels
+//
+//        //TODO edit canvas and repaint e.g. drawColor()
+//
+//
+//        //done with editing / drawing on canvas - unlocking
+//        holder.unlockCanvasAndPost(canvas);
+//    }
 
 
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) { //don't necessarily draw in here when rendering is proceeded anywhere else
-        Log.d(VIEW_LOG_TAG, "surface Created ");
-        Toast.makeText(primary, VIEW_LOG_TAG + "surface Created", Toast.LENGTH_SHORT).show();
-//        primary.openCam();
-//        try {
-//            // create the surface and start camera preview
-////            if (mCamera == null) {
-////                mCamera.setPreviewDisplay(holder);
-////                mCamera.startPreview();
-////            }
-//        } catch (IOException e) {
-//            Log.d(VIEW_LOG_TAG, "Error setting camera preview: " + e.getMessage());
-//        }
+        Toast.makeText(primary, "surface created", Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -108,15 +91,13 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
         return new CameraDevice.StateCallback(){
             @Override
             public void onOpened(CameraDevice camera) {
-                Log.d(VIEW_LOG_TAG, "camera opened" + camera);
 
                 final CameraDevice device = camera;
-                primary.setButton(new OnClickListener() {
+                primary.setDevice(camera);
+                primary.setButton(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         primary.closeCam(device);
-                        ((Button) v).setText("deactivate Cam");
-                        v.setEnabled(true);
                     }
                 });
                 primary.createCamPreview(device);
@@ -124,12 +105,35 @@ public class Preview extends SurfaceView implements SurfaceHolder.Callback{
 
             @Override
             public void onDisconnected(CameraDevice camera) {
+                final CameraDevice device = camera;
+                primary.setButton(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        primary.openCam(v);
+                    }
+                });
                 primary.closeCam(camera);
             }
 
             @Override
             public void onError(CameraDevice camera, int error) {
                 primary.closeCam(camera);
+            }
+        };
+    }
+
+    public CameraCaptureSession.StateCallback getSessionCallback(final CameraDevice device){
+        return new CameraCaptureSession.StateCallback(){
+
+            @Override
+            public void onConfigured(@NonNull CameraCaptureSession cameraCaptureSession) {
+
+                primary.setCaptureSessions(cameraCaptureSession);
+//                primary.updatePreview(device);
+            }
+            @Override
+            public void onConfigureFailed(@NonNull CameraCaptureSession cameraCaptureSession) {
+                Toast.makeText(primary, "configuration failed", Toast.LENGTH_SHORT).show();
             }
         };
     }

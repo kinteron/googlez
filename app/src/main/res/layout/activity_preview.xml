@@ -9,10 +9,10 @@
 
     <!-- causes this element to use derived class!-->
     <SurfaceView
+        android:id="@+id/surface"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        class = "app.justin.googlez.Classes.Preview"
-        android:id="@+id/surface"/>
+        />
     <!--
     android:layout_alignBottom="@id/btnCapture"
     android:layout_above="@id/btnCapture"-->
